@@ -3,38 +3,42 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import sys
 from os.path import exists
+import json
 
+# with open("/home/skyler/RomBot/src/config.json") as json_conf:
+#     CONF = json.load(json_conf)
 
-def fetch(rom_info):  # fetches rom from vimm.net
+def fetch(rom_request):  # fetches rom from vimm.net | request format = "system : title"
     try:
         url = f'https://vimm.net/?p=vault'
-        rom_info = rom_info.split(' : ')
-        rom_data = parse_data(rom_info[0], rom_info[1]) # rom_data == [title, relative_path]
+        rom_request = rom_request.split(' : ')
+        rom_data = parse_data(rom_request[0], rom_request[1]) # rom_data == [title, relative_path]
         absolute = urljoin(url, rom_data[1])
-        save_path = ''
-        if exists(f'/home/skyler/RomLib/{rom_data[0]}.zip'):
-            print(f'/home/skyler/RomLib/{rom_data[0]}.zip')
-        else:
-            download(absolute, rom_data[0])
+        file_name = rom_data[0].replace(" ", "-")
+
+        if not exists(f'/home/skyler/RomLib/{file_name}.zip'): # if the rom is not in the library download the rom
+            download(absolute, file_name)
+        print(f'/home/skyler/RomLib/{file_name}.zip')
+
     except Exception as E:
         print(E)
 
 
 def parse_data(system, title): # locates and returns rom data from the systems data file
-    if system not in ["SNES", "NES", "GameCube", "PS1", 'PS3']:
+    if not exists(f'/home/skyler/RomBot/data/{system}_data'):
         raise Exception(f"Invalid System")
 
-    with open(f'/home/skyler/RomBot/data/{system}_data') as f:
-        for line in f:
+    with open(f'/home/skyler/RomBot/data/{system}_data') as data_file:
+        for line in data_file:
             if title in line:
                 data = line.strip('\n').split(' : ')
                 return data
-
+        # if title doesn't match any rom's in data file
         raise Exception(f"Invalid Rom")
 
 
-def download(url, file_name):  # downloads rom.zip from vimms liar
-    payload = {  # pyaload to make request seem like a user not a bot
+def download(url, file_name):
+    payload = {  # payload to make request look like a user
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
@@ -48,15 +52,19 @@ def download(url, file_name):  # downloads rom.zip from vimms liar
         raise Exception("Unable to Connect")
     html = BeautifulSoup(response.text, 'html.parser')
 
+    # get the correct mediaId for the download link
     media_id = html.find("input", attrs={'name': 'mediaId'}).get("value")
-    url_d = f'https://download2.vimm.net/download/?mediaId={media_id}'
+    d_url = f'https://download2.vimm.net/download/?mediaId={media_id}'
 
-    response = requests.get(url_d, headers=payload)
-    save_path = '/home/skyler/RomLib'
-    open(f'{save_path}/{file_name}.zip', 'wb').write(response.content)
+    # download the .zip file and save it into the Rom Library
+    response = requests.get(d_url, headers=payload)
     if not response.ok:
         print(f"get_rom({url}): {response.status_code} {response.reason} {response.headers}")
         raise Exception("Unable to Download")
+
+    open(f'/home/skyler/RomLib/{file_name}.zip', 'wb').write(response.content)
+    print("Finished Download.")
+
 
 if __name__ == "__main__":
     fetch(' '.join(sys.argv[1:]))
