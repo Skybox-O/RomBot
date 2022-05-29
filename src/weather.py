@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import sys
 
 def temp(location):
     try:
@@ -21,3 +22,6 @@ def temp(location):
     if not weather:
         return None
     return weather
+
+if __name__ == "__main__":
+    print(temp(sys.argv[1]))
