@@ -1,9 +1,10 @@
 import os
 import sys
 from discord.ext import commands
+from discord import File, HTTPException
 from dotenv import load_dotenv
-from Weather import temp
-from Rom import fetch
+from weather import temp
+from rom import fetch
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -15,11 +16,19 @@ bot = commands.Bot(command_prefix="!")
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
-@bot.command(name='request', help=': (!request (SYSTEM) : (ROM NAME)), fetches the requested rom from vimm.net')
-async def request(message):
-    response = message.message.content
-    print(response)
-    await message.send(response)
+@bot.command(name='rom', help=': (!rom (SYSTEM): (ROM NAME)), fetches the requested rom from vimm.net')
+async def send(message):
+    request = message.message.content.replace("!rom", "")
+    print(request)
+    print(f"Fetching... {request}")
+    # try:
+    #     await message.send(file=File(fetch(request)))
+    # except HTTPException as E:
+    #     print(f"{request} : {E.text}")
+    #     await message.send(f"{request} : {E.text}")
+    # except Exception as E:
+    #     print(f"{request} : {E}")
+    #     await message.send(f"{request} : {E}")
 
 @bot.command(name='temp')
 async def weather(message):
@@ -27,11 +36,11 @@ async def weather(message):
     weather = temp(location)
     response = f"""
 {location.upper()}
-{"======================================="}
-| Date and Time: {weather["Time"]}      |
-| Temperature: {weather["Temperature"]} |
-| Weather: {weather["Weather"]}     
-{"======================================="}
+{"====================================="}
+| Date and Time: {weather["Time"]}     |
+| Temperature: {weather["Temperature"]}|
+| Weather: {weather["Weather"]}
+{"====================================="}
     """
     await message.send(response)
 
