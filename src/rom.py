@@ -52,6 +52,7 @@ def download_rom(rom_data):
     print("Finished Download.")
 
 
+
 if __name__ == "__main__":
     try:
         print(fetch(' '.join(sys.argv[1:])))
