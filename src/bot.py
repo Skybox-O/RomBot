@@ -18,17 +18,16 @@ async def on_ready():
 
 @bot.command(name='rom', help=': (!rom (SYSTEM): (ROM NAME)), fetches the requested rom from vimm.net')
 async def send(message):
-    request = message.message.content.replace("!rom", "")
-    print(request)
+    request = message.message.content.replace("!rom ", "")
     print(f"Fetching... {request}")
-    # try:
-    #     await message.send(file=File(fetch(request)))
-    # except HTTPException as E:
-    #     print(f"{request} : {E.text}")
-    #     await message.send(f"{request} : {E.text}")
-    # except Exception as E:
-    #     print(f"{request} : {E}")
-    #     await message.send(f"{request} : {E}")
+    try:
+        await message.send(file=File(fetch(request)))
+    except HTTPException as E:
+        print(f"{request} : {E.text}")
+        await message.send(f"{request} : {E.text}")
+    except Exception as E:
+        print(f"{request} : {E}")
+        await message.send(f"{request} : {E}")
 
 @bot.command(name='temp')
 async def weather(message):

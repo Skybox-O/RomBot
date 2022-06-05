@@ -14,7 +14,7 @@ def scrape(system):
                 html = visit(urljoin("https://vimm.net/vault/", link))
                 media_id = html.find("input", attrs={'name': 'mediaId'}).get("value")
                 print(f'{title} : {media_id}')
-                print(f'{title} : {media_id}', file=sys.stderr)
+                print(f'{title} : {media_id}', file=sys.stderr) # print to stderr so you can see progress in console
 
 
 def visit(url):
